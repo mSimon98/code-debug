@@ -518,14 +518,28 @@ export class MI2DebugSession extends DebugSession {
 		else if (typeof id == "object") {
 			if (id instanceof VariableObject) {
 				// Variable members
-				let children: VariableObject[];
 				try {
-					children = await this.miDebugger.varListChildren(id.name);
-					const vars = children.map(child => {
-						const varId = findOrCreateVariable(child);
-						child.id = varId;
-						return child.toProtocolVariable();
-					});
+					let visitChildren = async (name, vars: DebugProtocol.Variable[], visibility: string = "public") => {
+						let children = await this.miDebugger.varListChildren(name);
+
+						for (let child of children) {
+							if (child.exp == "private" || child.exp == "public" || child.exp == "protected") {
+								vars = await visitChildren(child.name, vars, child.exp);
+							} else {
+								const varId = findOrCreateVariable(child);
+								child.id = varId;
+
+								const protocolVar = child.toProtocolVariable();
+								protocolVar.presentationHint = {
+									visibility: visibility
+								};
+								vars.push(protocolVar);
+							}
+						}
+
+						return vars;
+					};
+					let vars = await visitChildren(id.name, []);
 
 					response.body = {
 						variables: vars

@@ -345,7 +345,11 @@ export class MI2 extends EventEmitter implements IBackend {
 				if (parsed.outOfBandRecord) {
 					parsed.outOfBandRecord.forEach(record => {
 						if (record.isStream) {
-							this.log(record.type, record.content);
+							if (this.consoleHandler && record.type == "console") {
+								this.consoleHandler(record.content);
+							} else {
+								this.log(record.type, record.content);
+							}
 						} else {
 							if (record.type == "exec") {
 								this.emit("exec-async-output", parsed);
@@ -766,13 +770,24 @@ export class MI2 extends EventEmitter implements IBackend {
 			this.process.stdin.write(raw + "\n");
 	}
 
-	async sendCliCommand(command: string, threadId: number = 0, frameLevel: number = 0) {
-		let mi_command = "interpreter-exec ";
+	async sendCliCommand(command: string, threadId: number = 0, frameLevel: number = 0, suppressOutput: boolean = false, suppressFailure: boolean = false): Promise<string[]> {
+		let stdout = [];
+		if (suppressOutput) {
+			this.consoleHandler = (line) => {
+				stdout.push(line);
+			};
+		}
+		let mi_command = "interpreter-exec "
 		if (threadId != 0) {
 			mi_command += `--thread ${threadId} --frame ${frameLevel} `;
 		}
 		mi_command += `console "${command.replace(/[\\"']/g, '\\$&')}"`;
 		await this.sendCommand(mi_command);
+		if (suppressOutput) {
+			this.consoleHandler = null;
+		}
+
+		return suppressOutput ? stdout : undefined;
 	}
 
 	sendCommand(command: string, suppressFailure: boolean = false): Thenable<MINode> {
@@ -807,6 +822,7 @@ export class MI2 extends EventEmitter implements IBackend {
 	protected sshReady: boolean;
 	protected currentToken: number = 1;
 	protected handlers: { [index: number]: (info: MINode) => any } = {};
+	protected consoleHandler: (line: string) => any = null;
 	protected breakpoints: Map<Breakpoint, Number> = new Map();
 	protected buffer: string;
 	protected errbuf: string;

@@ -45,6 +45,7 @@ class GDBDebugSession extends MI2DebugSession {
 		response.body.supportsEvaluateForHovers = true;
 		response.body.supportsSetVariable = true;
 		response.body.supportsStepBack = true;
+		response.body.supportsCompletionsRequest = true;
 		this.sendResponse(response);
 	}
 
@@ -182,6 +183,16 @@ class GDBDebugSession extends MI2DebugSession {
 				});
 			}
 		}
+	}
+
+	protected async completionsRequest(response: DebugProtocol.CompletionsResponse, args: DebugProtocol.CompletionsArguments) {
+		this.handleMsg("stderr", "CompletionsRequest:" + JSON.stringify(args));
+		let [threadId, level] = this.frameIdToThreadAndLevel(args.frameId);
+		let lines = await this.miDebugger.sendCliCommand("complete " + args.text, threadId, level);
+		response.body = {
+			targets: lines.map((line) => ({ label: line.substr(0, line.length - 1) }))
+		}
+		this.sendResponse(response);
 	}
 }
 

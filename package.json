@@ -131,6 +131,11 @@
 								"description": "GDB commands to run when starting to debug",
 								"default": []
 							},
+							"gdbinitfile" : {
+								"type": "boolean",
+								"description": "Load .gdbinit file",
+								"default": true
+							},
 							"ssh": {
 								"required": [
 									"host",
@@ -260,6 +265,11 @@
 								"type": "array",
 								"description": "GDB commands to run when starting to debug",
 								"default": []
+							},
+							"gdbinitfile" : {
+								"type": "boolean",
+								"description": "Load .gdbinit file",
+								"default": true
 							},
 							"ssh": {
 								"required": [

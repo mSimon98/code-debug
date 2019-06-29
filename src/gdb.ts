@@ -18,6 +18,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	printCalls: boolean;
 	multiProcess: boolean;
 	showDevDebugOutput: boolean;
+	gdbinitfile: boolean;
 }
 
 export interface AttachRequestArguments extends DebugProtocol.AttachRequestArguments {
@@ -34,6 +35,7 @@ export interface AttachRequestArguments extends DebugProtocol.AttachRequestArgum
 	printCalls: boolean;
 	multiProcess: boolean;
 	showDevDebugOutput: boolean;
+	gdbinitfile: boolean;
 }
 
 class GDBDebugSession extends MI2DebugSession {
@@ -49,7 +51,7 @@ class GDBDebugSession extends MI2DebugSession {
 	}
 
 	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
-		this.miDebugger = new MI2(args.gdbpath || "gdb", ["-q", "--interpreter=mi2"], args.debugger_args, args.env);
+		this.miDebugger = new MI2(args.gdbpath || "gdb", ["-q", "--interpreter=mi2", (args.gdbinitfile ? "" : "--nx")], args.debugger_args, args.env);
 		this.initDebugger();
 		this.quit = false;
 		this.attached = false;
@@ -90,13 +92,12 @@ class GDBDebugSession extends MI2DebugSession {
 					if (this.crashed)
 						this.handlePause(undefined);
 				}, err => {
-					this.sendErrorResponse(response, 100, `Failed to start MI Debugger: ${err.toString()}`)
+					this.sendErrorResponse(response, 100, `Failed to start MI Debugger: ${err.toString()}`);
 				});
 			}, err => {
-				this.sendErrorResponse(response, 102, `Failed to SSH: ${err.toString()}`)
+				this.sendErrorResponse(response, 102, `Failed to SSH: ${err.toString()}`);
 			});
-		}
-		else {
+		} else {
 			this.miDebugger.load(args.cwd, args.target, args.arguments, args.terminal).then(() => {
 				if (args.autorun)
 					args.autorun.forEach(command => {
@@ -111,16 +112,16 @@ class GDBDebugSession extends MI2DebugSession {
 					if (this.crashed)
 						this.handlePause(undefined);
 				}, err => {
-					this.sendErrorResponse(response, 100, `Failed to Start MI Debugger: ${err.toString()}`)
+					this.sendErrorResponse(response, 100, `Failed to Start MI Debugger: ${err.toString()}`);
 				});
 			}, err => {
-				this.sendErrorResponse(response, 103, `Failed to load MI Debugger: ${err.toString()}`)
+				this.sendErrorResponse(response, 103, `Failed to load MI Debugger: ${err.toString()}`);
 			});
 		}
 	}
 
 	protected attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments): void {
-		this.miDebugger = new MI2(args.gdbpath || "gdb", ["-q", "--interpreter=mi2"], args.debugger_args, args.env);
+		this.miDebugger = new MI2(args.gdbpath || "gdb", ["-q", "--interpreter=mi2", (args.gdbinitfile ? "" : "--nx")], args.debugger_args, args.env);
 		this.initDebugger();
 		this.quit = false;
 		this.attached = !args.remote;
@@ -155,30 +156,20 @@ class GDBDebugSession extends MI2DebugSession {
 				}, 50);
 				this.sendResponse(response);
 			}, err => {
-				this.sendErrorResponse(response, 102, `Failed to SSH: ${err.toString()}`)
+				this.sendErrorResponse(response, 102, `Failed to SSH: ${err.toString()}`);
 			});
-		}
-		else {
+		} else {
 			if (args.remote) {
-				this.miDebugger.connect(args.cwd, args.executable, args.target).then(() => {
-					if (args.autorun)
-						args.autorun.forEach(command => {
-							this.miDebugger.sendUserInput(command);
-						});
+				this.miDebugger.connect(args.cwd, args.executable, args.target, args.autorun).then(() => {
 					this.sendResponse(response);
 				}, err => {
-					this.sendErrorResponse(response, 102, `Failed to attach: ${err.toString()}`)
+					this.sendErrorResponse(response, 102, `Failed to attach: ${err.toString()}`);
 				});
-			}
-			else {
-				this.miDebugger.attach(args.cwd, args.executable, args.target).then(() => {
-					if (args.autorun)
-						args.autorun.forEach(command => {
-							this.miDebugger.sendUserInput(command);
-						});
+			} else {
+				this.miDebugger.attach(args.cwd, args.executable, args.target, args.autorun).then(() => {
 					this.sendResponse(response);
 				}, err => {
-					this.sendErrorResponse(response, 101, `Failed to attach: ${err.toString()}`)
+					this.sendErrorResponse(response, 101, `Failed to attach: ${err.toString()}`);
 				});
 			}
 		}

@@ -9,11 +9,11 @@
 		"native",
 		"debug"
 	],
-	"version": "0.22.0",
+	"version": "0.23.1",
 	"publisher": "webfreak",
 	"icon": "images/icon.png",
 	"engines": {
-		"vscode": "^1.8.0"
+		"vscode": "^1.28.0"
 	},
 	"main": "./out/src/frontend/extension",
 	"activationEvents": [
@@ -61,7 +61,8 @@
 						"arm",
 						"asm",
 						"vala",
-						"crystal"
+						"crystal",
+						"kotlin"
 					]
 				},
 				"variables": {
@@ -134,6 +135,11 @@
 								"type": "array",
 								"description": "GDB commands to run when starting to debug",
 								"default": []
+							},
+							"gdbinitfile" : {
+								"type": "boolean",
+								"description": "Load .gdbinit file",
+								"default": true
 							},
 							"ssh": {
 								"required": [
@@ -265,6 +271,11 @@
 								"description": "GDB commands to run when starting to debug",
 								"default": []
 							},
+							"gdbinitfile" : {
+								"type": "boolean",
+								"description": "Load .gdbinit file",
+								"default": true
+							},
 							"ssh": {
 								"required": [
 									"host",
@@ -339,7 +350,8 @@
 						"type": "gdb",
 						"request": "launch",
 						"target": "./bin/executable",
-						"cwd": "${workspaceRoot}"
+						"cwd": "${workspaceRoot}",
+						"valuesFormatting": "parseText"
 					}
 				],
 				"configurationSnippets": [
@@ -351,7 +363,8 @@
 							"request": "launch",
 							"name": "${2:Launch Program}",
 							"target": "${1:./bin/executable}",
-							"cwd": "^\"\\${workspaceRoot}\""
+							"cwd": "^\"\\${workspaceRoot}\"",
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -362,7 +375,8 @@
 							"request": "attach",
 							"name": "${2:Attach to PID}",
 							"target": "${1:[PID]}",
-							"cwd": "^\"\\${workspaceRoot}\""
+							"cwd": "^\"\\${workspaceRoot}\"",
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -375,7 +389,8 @@
 							"executable": "${1:./bin/executable}",
 							"target": ":${2:2345}",
 							"remote": true,
-							"cwd": "^\"\\${workspaceRoot}\""
+							"cwd": "^\"\\${workspaceRoot}\"",
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -392,7 +407,8 @@
 								"cwd": "${3:/home/remote_user/project/}",
 								"keyfile": "${4:/home/my_user/.ssh/id_rsa}",
 								"user": "${5:remote_user}"
-							}
+							},
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -412,7 +428,8 @@
 								"forwardX11": true,
 								"x11host": "localhost",
 								"x11port": 6000
-							}
+							},
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -431,7 +448,8 @@
 								"attach 1",
 								"load ${1:./bin/executable.elf}"
 							]
-						}
+						},
+						"valuesFormatting": "parseText"
 					}
 				]
 			},
@@ -473,7 +491,8 @@
 						"dylan",
 						"mips",
 						"renderscript",
-						"vala"
+						"vala",
+						"kotlin"
 					]
 				},
 				"configurationAttributes": {
@@ -668,7 +687,8 @@
 						"type": "lldb-mi",
 						"request": "launch",
 						"target": "./bin/executable",
-						"cwd": "${workspaceRoot}"
+						"cwd": "${workspaceRoot}",
+						"valuesFormatting": "parseText"
 					}
 				],
 				"configurationSnippets": [
@@ -680,7 +700,8 @@
 							"request": "launch",
 							"name": "${2:Launch Program}",
 							"target": "${1:./bin/executable}",
-							"cwd": "^\"\\${workspaceRoot}\""
+							"cwd": "^\"\\${workspaceRoot}\"",
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -691,7 +712,8 @@
 							"request": "attach",
 							"name": "${2:Attach to PID}",
 							"target": "${1:[PID]}",
-							"cwd": "^\"\\${workspaceRoot}\""
+							"cwd": "^\"\\${workspaceRoot}\"",
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -708,7 +730,8 @@
 								"cwd": "${3:/home/remote_user/project/}",
 								"keyfile": "${4:/home/my_user/.ssh/id_rsa}",
 								"user": "${5:remote_user}"
-							}
+							},
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -728,7 +751,8 @@
 								"forwardX11": true,
 								"x11host": "localhost",
 								"x11port": 6000
-							}
+							},
+							"valuesFormatting": "parseText"
 						}
 					}
 				]
@@ -875,7 +899,8 @@
 						"type": "mago-mi",
 						"request": "launch",
 						"target": "./bin/executable",
-						"cwd": "${workspaceRoot}"
+						"cwd": "${workspaceRoot}",
+						"valuesFormatting": "parseText"
 					}
 				],
 				"configurationSnippets": [
@@ -887,7 +912,8 @@
 							"request": "launch",
 							"name": "${2:Launch Program}",
 							"target": "${1:./bin/executable}",
-							"cwd": "^\"\\${workspaceRoot}\""
+							"cwd": "^\"\\${workspaceRoot}\"",
+							"valuesFormatting": "parseText"
 						}
 					},
 					{
@@ -898,7 +924,8 @@
 							"request": "attach",
 							"name": "${2:Attach to PID}",
 							"target": "${1:[PID]}",
-							"cwd": "^\"\\${workspaceRoot}\""
+							"cwd": "^\"\\${workspaceRoot}\"",
+							"valuesFormatting": "parseText"
 						}
 					}
 				]
@@ -913,13 +940,20 @@
 	"dependencies": {
 		"vscode-debugadapter": "^1.16.0",
 		"vscode-debugprotocol": "^1.16.0",
-		"ssh2": "^0.5.4"
+		"ssh2": "^0.8.2"
 	},
 	"devDependencies": {
-		"typescript": "^2.1.6",
-		"vscode": "^1.0.3",
-		"mocha": "^3.2.0",
-		"@types/node": "^7.0.5",
-		"@types/mocha": "^2.2.39"
+		"@types/mocha": "^5.2.6",
+		"@types/node": "^11.11.3",
+		"mocha": "^6.0.2",
+		"tslint": "^5.14.0",
+		"tslint-language-service": "^0.9.9",
+		"typescript": "^3.3.3333",
+		"vscode": "^1.1.30"
+	},
+	"__metadata": {
+		"id": "2fd22b8e-b3b8-4e7f-9a28-a5e2d1bdd0d4",
+		"publisherDisplayName": "WebFreak",
+		"publisherId": "e054f80a-50f9-4d80-85c8-6ff87eef6c35"
 	}
 }

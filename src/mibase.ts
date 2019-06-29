@@ -143,16 +143,16 @@ export class MI2DebugSession extends DebugSession {
 	}
 
 	protected threadCreatedEvent(info: MINode) {
-		let threadId = parseInt(info.record("id"), 10);
+		const threadId = parseInt(info.record("id"), 10);
 
-		let threadPid = this.threadGroupPids.get(info.record("group-id"));
+		const threadPid = this.threadGroupPids.get(info.record("group-id"));
 		this.threadToPid.set(threadId, threadPid);
 
 		this.sendEvent(new ThreadEvent("started", threadId));
 	}
 
 	protected threadExitedEvent(info: MINode) {
-		let threadId = parseInt(info.record("id"), 10);
+		const threadId = parseInt(info.record("id"), 10);
 
 		this.threadToPid.delete(info.record("group-id"));
 
@@ -303,7 +303,7 @@ export class MI2DebugSession extends DebugSession {
 						threadName = "<unnamed>";
 					}
 					if (this.threadGroupPids.size > 1) {
-						let pid = this.threadToPid.get(thread.id);
+						const pid = this.threadToPid.get(thread.id);
 						threadName = `(${pid}) ${thread.id}:${threadName}`;
 					} else {
 						threadName = `${thread.id}:${threadName}`;

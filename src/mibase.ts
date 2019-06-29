@@ -136,7 +136,7 @@ export class MI2DebugSession extends DebugSession {
 		if (!this.started)
 			this.crashed = true;
 		if (!this.quit) {
-			const event = new StoppedEvent("exception", parseInt(info.record("thread-id")));
+			const event = new StoppedEvent(info.record("reason"), parseInt(info.record("thread-id")));
 			(event as DebugProtocol.StoppedEvent).body.allThreadsStopped = info.record("stopped-threads") == "all";
 			this.sendEvent(event);
 		}

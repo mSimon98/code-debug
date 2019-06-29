@@ -359,13 +359,13 @@ export class MI2DebugSession extends DebugSession {
 
 	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
 		// FIXME: Does not seem to get called in january release
-		if (this.needContinue) {
+		/*if (this.needContinue) {
 			this.miDebugger.continue().then(done => {
 				this.sendResponse(response);
 			}, msg => {
 				this.sendErrorResponse(response, 2, `Could not continue: ${msg}`);
 			});
-		} else
+		} else*/
 			this.sendResponse(response);
 	}
 
@@ -603,8 +603,8 @@ export class MI2DebugSession extends DebugSession {
 	}
 
 	protected reverseContinueRequest(response: DebugProtocol.ReverseContinueResponse, args: DebugProtocol.ReverseContinueArguments): void {
-		this.miDebugger.continue(true).then(done => {
-			response.body.allThreadsContinued = true;
+		const [threadId, level] = this.frameIdToThreadAndLevel(args.threadId);
+		this.miDebugger.continue(threadId, level, true).then(done => {
 			this.sendResponse(response);
 		}, msg => {
 			this.sendErrorResponse(response, 2, `Could not continue: ${msg}`);
@@ -612,8 +612,10 @@ export class MI2DebugSession extends DebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-		this.miDebugger.continue().then(done => {
-			response.body.allThreadsContinued = true;
+		// add thread id
+		const [threadId, level] = this.frameIdToThreadAndLevel(args.threadId);
+		this.miDebugger.continue(threadId, level).then(done => {
+			response.body.allThreadsContinued = false;
 			this.sendResponse(response);
 		}, msg => {
 			this.sendErrorResponse(response, 2, `Could not continue: ${msg}`);

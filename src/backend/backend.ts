@@ -57,7 +57,7 @@ export interface IBackend {
 	stop();
 	detach();
 	interrupt(all: boolean): Thenable<boolean>;
-	continue(): Thenable<boolean>;
+	continue(thread: number, frame: number): Thenable<boolean>;
 	next(): Thenable<boolean>;
 	step(): Thenable<boolean>;
 	stepOut(): Thenable<boolean>;

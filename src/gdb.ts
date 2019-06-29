@@ -156,21 +156,13 @@ class GDBDebugSession extends MI2DebugSession {
 			});
 		} else {
 			if (args.remote) {
-				this.miDebugger.connect(args.cwd, args.executable, args.target).then(() => {
-					if (args.autorun)
-						args.autorun.forEach(command => {
-							this.miDebugger.sendUserInput(command);
-						});
+				this.miDebugger.connect(args.cwd, args.executable, args.target, args.autorun).then(() => {
 					this.sendResponse(response);
 				}, err => {
 					this.sendErrorResponse(response, 102, `Failed to attach: ${err.toString()}`);
 				});
 			} else {
-				this.miDebugger.attach(args.cwd, args.executable, args.target).then(() => {
-					if (args.autorun)
-						args.autorun.forEach(command => {
-							this.miDebugger.sendUserInput(command);
-						});
+				this.miDebugger.attach(args.cwd, args.executable, args.target, args.autorun).then(() => {
 					this.sendResponse(response);
 				}, err => {
 					this.sendErrorResponse(response, 101, `Failed to attach: ${err.toString()}`);

@@ -201,7 +201,7 @@ export class MI2 extends EventEmitter implements IBackend {
 		return cmds;
 	}
 
-	attach(cwd: string, executable: string, target: string): Thenable<any> {
+	attach(cwd: string, executable: string, target: string, autorun: string[]): Thenable<any> {
 		return new Promise((resolve, reject) => {
 			let args = [];
 			if (executable && !nativePath.isAbsolute(executable))
@@ -223,6 +223,10 @@ export class MI2 extends EventEmitter implements IBackend {
 				this.sendCommand("gdb-set target-async on"),
 				this.sendCommand("environment-directory \"" + escape(cwd) + "\"")
 			];
+			if (autorun)
+				autorun.forEach(command => {
+					commands.push(this.sendUserInput(command));
+				});
 			if (isExtendedRemote) {
 				commands.push(this.sendCommand("target-select " + target));
 				commands.push(this.sendCommand("file-symbol-file \"" + escape(executable) + "\""));
@@ -234,7 +238,7 @@ export class MI2 extends EventEmitter implements IBackend {
 		});
 	}
 
-	connect(cwd: string, executable: string, target: string): Thenable<any> {
+	connect(cwd: string, executable: string, target: string, autorun: string[]): Thenable<any> {
 		return new Promise((resolve, reject) => {
 			let args = [];
 			if (executable && !nativePath.isAbsolute(executable))
@@ -248,11 +252,16 @@ export class MI2 extends EventEmitter implements IBackend {
 			this.process.stderr.on("data", this.stderr.bind(this));
 			this.process.on("exit", (() => { this.emit("quit"); }).bind(this));
 			this.process.on("error", ((err) => { this.emit("launcherror", err); }).bind(this));
-			Promise.all([
+			const commands = [
 				this.sendCommand("gdb-set target-async on"),
-				this.sendCommand("environment-directory \"" + escape(cwd) + "\""),
-				this.sendCommand("target-select remote " + target)
-			]).then(() => {
+				this.sendCommand("environment-directory \"" + escape(cwd) + "\"")
+			];
+			if (autorun)
+				autorun.forEach(command => {
+					commands.push(this.sendUserInput(command));
+				});
+			commands.push(this.sendCommand("target-select remote " + target));
+			Promise.all(commands).then(() => {
 				this.emit("debug-ready");
 				resolve();
 			}, reject);

@@ -152,7 +152,7 @@ export class MI2DebugSession extends DebugSession {
 
 		if (this.serverPath)
 			fs.unlink(this.serverPath, (err) => {
-				console.error("Failed to unlink debug server");
+				this.miDebugger.log("stderr", "Failed to unlink debug server");
 			});
 	}
 

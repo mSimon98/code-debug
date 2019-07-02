@@ -48,7 +48,7 @@ export class MI2DebugSession extends DebugSession {
 	protected initDebugger() {
 		this.miDebugger.on("launcherror", this.launchError.bind(this));
 		this.miDebugger.on("quit", this.quitEvent.bind(this));
-		this.miDebugger.on("exited-normally", this.quitEvent.bind(this));
+		this.miDebugger.on("exited-normally", this.exitEvent.bind(this));
 		this.miDebugger.on("stopped", this.stopEvent.bind(this));
 		this.miDebugger.on("msg", this.handleMsg.bind(this));
 		this.miDebugger.on("breakpoint", this.handleBreakpoint.bind(this));
@@ -140,6 +140,12 @@ export class MI2DebugSession extends DebugSession {
 			(event as DebugProtocol.StoppedEvent).body.allThreadsStopped = info.record("stopped-threads") == "all";
 			this.sendEvent(event);
 		}
+	}
+
+	protected exitEvent(info: MINode) {
+		const event = new StoppedEvent("exited", parseInt(info.record("thread-id")));
+		(event as DebugProtocol.StoppedEvent).body.allThreadsStopped = info.record("stopped-threads") == "all";
+		this.sendEvent(event);
 	}
 
 	protected threadCreatedEvent(info: MINode) {

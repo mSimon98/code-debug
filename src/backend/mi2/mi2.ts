@@ -27,7 +27,7 @@ function couldBeOutput(line: string) {
 const trace = false;
 
 export class MI2 extends EventEmitter implements IBackend {
-	constructor(public application: string, public preargs: string[], public extraargs: string[], procEnv: any) {
+	constructor(public application: string, public preargs: string[], public extraargs: string[], procEnv: any, public extraCommands: string[] = []) {
 		super();
 
 		if (procEnv) {
@@ -197,6 +197,9 @@ export class MI2 extends EventEmitter implements IBackend {
 			cmds.push(this.sendCommand("file-exec-and-symbols \"" + escape(target) + "\""));
 		if (this.prettyPrint)
 			cmds.push(this.sendCommand("enable-pretty-printing"));
+		for (let cmd of this.extraCommands) {
+			cmds.push(this.sendCommand(cmd));
+		}
 
 		return cmds;
 	}
@@ -487,6 +490,19 @@ export class MI2 extends EventEmitter implements IBackend {
 		});
 	}
 
+	goto(filename: string, line: number): Thenable<Boolean> {
+		if (trace)
+			this.log("stderr", "goto");
+		return new Promise((resolve, reject) => {
+			const target: string = '"' + (filename ? escape(filename) + ":" : "") + line + '"';
+			this.sendCommand("break-insert -t " + target).then(() => {
+				this.sendCommand("exec-jump " + target).then((info) => {
+					resolve(info.resultRecords.resultClass == "running");
+				}, reject);
+			}, reject);
+		});
+	}
+
 	changeVariable(name: string, rawValue: string): Thenable<any> {
 		if (trace)
 			this.log("stderr", "changeVariable");
@@ -603,10 +619,8 @@ export class MI2 extends EventEmitter implements IBackend {
 				targetId: MINode.valueOf(element, "target-id")
 			};
 
-			const name = MINode.valueOf(element, "name");
-			if (name) {
-				ret.name = name;
-			}
+			ret.name = MINode.valueOf(element, "details")
+				|| undefined;
 
 			return ret;
 		});

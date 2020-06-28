@@ -10,6 +10,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	gdbpath: string;
 	env: any;
 	debugger_args: string[];
+	pathSubstitutions: { [index: string]: string };
 	arguments: string;
 	terminal: string;
 	autorun: string[];
@@ -26,6 +27,7 @@ export interface AttachRequestArguments extends DebugProtocol.AttachRequestArgum
 	gdbpath: string;
 	env: any;
 	debugger_args: string[];
+	pathSubstitutions: { [index: string]: string };
 	executable: string;
 	remote: boolean;
 	autorun: string[];
@@ -38,6 +40,7 @@ export interface AttachRequestArguments extends DebugProtocol.AttachRequestArgum
 
 class GDBDebugSession extends MI2DebugSession {
 	protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
+		response.body.supportsGotoTargetsRequest = true;
 		response.body.supportsHitConditionalBreakpoints = true;
 		response.body.supportsConfigurationDoneRequest = true;
 		response.body.supportsConditionalBreakpoints = true;
@@ -50,6 +53,7 @@ class GDBDebugSession extends MI2DebugSession {
 
 	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
 		this.miDebugger = new MI2(args.gdbpath || "gdb", ["-q", "--interpreter=mi2", (args.gdbinitfile ? "" : "--nx")], args.debugger_args, args.env);
+		this.setPathSubstitutions(args.pathSubstitutions);
 		this.initDebugger();
 		this.quit = false;
 		this.attached = false;
@@ -119,6 +123,7 @@ class GDBDebugSession extends MI2DebugSession {
 
 	protected attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments): void {
 		this.miDebugger = new MI2(args.gdbpath || "gdb", ["-q", "--interpreter=mi2", (args.gdbinitfile ? "" : "--nx")], args.debugger_args, args.env);
+		this.setPathSubstitutions(args.pathSubstitutions);
 		this.initDebugger();
 		this.quit = false;
 		this.attached = !args.remote;
@@ -168,6 +173,15 @@ class GDBDebugSession extends MI2DebugSession {
 					this.sendErrorResponse(response, 101, `Failed to attach: ${err.toString()}`);
 				});
 			}
+		}
+	}
+
+	// Add extra commands for source file path substitution in GDB-specific syntax
+	protected setPathSubstitutions(substitutions: { [index: string]: string }): void {
+		if (substitutions) {
+			Object.keys(substitutions).forEach(source => {
+				this.miDebugger.extraCommands.push("gdb-set substitute-path " + source + " " + substitutions[source]);
+			})
 		}
 	}
 }

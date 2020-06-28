@@ -62,4 +62,17 @@ export class MI2_LLDB extends MI2 {
 	setBreakPointCondition(bkptNum, condition): Thenable<any> {
 		return this.sendCommand("break-condition " + bkptNum + " \"" + escape(condition) + "\" 1");
 	}
+
+	goto(filename: string, line: number): Thenable<Boolean> {
+		return new Promise((resolve, reject) => {
+			// LLDB parses the file differently than GDB...
+			// GDB doesn't allow quoting only the file but only the whole argument
+			// LLDB doesn't allow quoting the whole argument but rather only the file
+			const target: string = (filename ? '"' + escape(filename) + '":' : "") + line;
+			this.sendCliCommand("jump " + target).then(() => {
+				this.emit("step-other", null);
+				resolve(true);
+			}, reject);
+		});
+	}
 }

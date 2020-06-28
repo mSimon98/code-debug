@@ -33,6 +33,7 @@ export interface AttachRequestArguments extends DebugProtocol.AttachRequestArgum
 
 class LLDBDebugSession extends MI2DebugSession {
 	protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
+		response.body.supportsGotoTargetsRequest = true;
 		response.body.supportsHitConditionalBreakpoints = true;
 		response.body.supportsConfigurationDoneRequest = true;
 		response.body.supportsConditionalBreakpoints = true;
@@ -116,6 +117,15 @@ class LLDBDebugSession extends MI2DebugSession {
 		this.miDebugger.attach(args.cwd, args.executable, args.target, args.autorun).then(() => {
 			this.sendResponse(response);
 		});
+	}
+
+	// Add extra commands for source file path substitution in LLDB-specific syntax
+	protected setPathSubstitutions(substitutions: { [index: string]: string }): void {
+		if (substitutions) {
+			Object.keys(substitutions).forEach(source => {
+				this.miDebugger.extraCommands.push("settings set target.source-map " + source + " " + substitutions[source]);
+			})
+		}
 	}
 }
 

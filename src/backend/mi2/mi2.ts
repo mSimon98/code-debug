@@ -27,7 +27,7 @@ function couldBeOutput(line: string) {
 const trace = false;
 
 export class MI2 extends EventEmitter implements IBackend {
-	constructor(public application: string, public preargs: string[], public extraargs: string[], procEnv: any) {
+	constructor(public application: string, public preargs: string[], public extraargs: string[], procEnv: any, public extraCommands: string[] = []) {
 		super();
 
 		if (procEnv) {
@@ -197,15 +197,8 @@ export class MI2 extends EventEmitter implements IBackend {
 			cmds.push(this.sendCommand("file-exec-and-symbols \"" + escape(target) + "\""));
 		if (this.prettyPrint)
 			cmds.push(this.sendCommand("enable-pretty-printing"));
-		if (this.multiProcess) {
-			cmds.push(
-			  this.sendCommand("gdb-set follow-fork-mode parent"),
-				this.sendCommand("gdb-set detach-on-fork off"),
-				this.sendCommand("gdb-set non-stop on"),
-				this.sendCommand("gdb-set schedule-multiple on"),
-
-				this.sendCommand("interpreter-exec console \"handle SIGSYS nostop noprint\"")
-			);
+		for (const cmd of this.extraCommands) {
+			cmds.push(this.sendCommand(cmd));
 		}
 
 		return cmds;
@@ -630,10 +623,8 @@ export class MI2 extends EventEmitter implements IBackend {
 				targetId: MINode.valueOf(element, "target-id")
 			};
 
-			const name = MINode.valueOf(element, "name");
-			if (name) {
-				ret.name = name;
-			}
+			ret.name = MINode.valueOf(element, "details")
+				|| undefined;
 
 			return ret;
 		});

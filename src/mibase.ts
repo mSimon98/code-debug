@@ -301,19 +301,11 @@ export class MI2DebugSession extends DebugSession {
 					threads: []
 				};
 				for (const thread of threads) {
-					let threadName = thread.name;
-					// TODO: Thread names are undefined on LLDB
-					if (threadName === undefined) {
-						threadName = thread.targetId;
-					}
-					if (threadName === undefined) {
-						threadName = "<unnamed>";
-					}
+					let threadName = thread.name || thread.targetId || "<unnamed>";
+					threadName = `${thread.id}:${threadName}`;
 					if (this.threadGroupPids.size > 1) {
 						const pid = this.threadToPid.get(thread.id);
-						threadName = `(${pid}) ${thread.id}:${threadName}`;
-					} else {
-						threadName = `${thread.id}:${threadName}`;
+						threadName = `(${pid}) ${threadName}`;
 					}
 					response.body.threads.push(new Thread(thread.id, threadName));
 				}
@@ -321,12 +313,12 @@ export class MI2DebugSession extends DebugSession {
 			});
 	}
 
-	// Supports 256 threads.
+	// Supports 65535 threads.
 	protected threadAndLevelToFrameId(threadId: number, level: number) {
-		return level << 8 | threadId;
+		return level << 16 | threadId;
 	}
 	protected frameIdToThreadAndLevel(frameId: number) {
-		return [frameId & 0xff, frameId >> 8];
+		return [frameId & 0xffff, frameId >> 16];
 	}
 
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {

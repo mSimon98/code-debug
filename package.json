@@ -140,7 +140,7 @@
 								"description": "GDB commands to run when starting to debug",
 								"default": []
 							},
-							"gdbinitfile" : {
+							"gdbinitfile": {
 								"type": "boolean",
 								"description": "Load .gdbinit file",
 								"default": true
@@ -282,7 +282,7 @@
 								"description": "GDB commands to run when starting to debug",
 								"default": []
 							},
-							"gdbinitfile" : {
+							"gdbinitfile": {
 								"type": "boolean",
 								"description": "Load .gdbinit file",
 								"default": true
